@@ -2,6 +2,7 @@ local fmt = string.format
 
 local SupportedGames = {
     10714365287,
+    10681622988,
     0
 }
 
