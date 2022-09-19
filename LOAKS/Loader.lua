@@ -1,32 +1,18 @@
-local fmt = string.format
+local Games = {
+    [10714365287] = "RBLX/main/LOAKS/SCRIPTS/10714365287.LOAKS";
 
-local SupportedGames = {
-    10320240572,
-    10676523834,
-    10681622988,
-    10714365287,
-    2653064683,
-    3101667897,
-    9980179145,
-    0
+
 }
 
-assert(getgenv, "Your exploit appears to be missing the getgenv function.")
-getgenv().request = request or type(http) == "table" and http.request
-assert(request, "Your exploit appears to be missing the request function.")
-
-if not isfolder("OpenHub") then
-    makefolder("OpenHub")
+local Supported = Games[game.PlaceId] or false
+if Supported ~= false then
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/LOAKS-HUB/' .. Supported))()
 end
 
-if table.find(SupportedGames, game.PlaceId) then
-    loadstring(request({
-        Url = fmt("https://raw.githubusercontent.com/RBLX-LOAKS/RBLX/main/LOAKS/SCRIPTS/%i.LOAKS", game.PlaceId),
-        Method = "GET"
-    }).Body)()
-else
-    loadstring(request({
-        Url = "https://raw.githubusercontent.com/RBLX-LOAKS/RBLX/main/LOAKS/SCRIPTS/Universal.lua",
-        Method = "GET"
-    }).Body)()
+if not game.PlaceId == Supported  then
+   local hint = Instance.new("Hint",game.CoreGui)
+    local req = (syn and syn.request) or (http and http.request) or http_request or request
+        print("Not a supported game")
+        hint.Text = "This game is not supported"
+    delay(5,function() hint:destroy() end)
 end
