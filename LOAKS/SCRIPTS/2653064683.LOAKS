@@ -10,7 +10,7 @@ local ClientGameScript = PlayerScripts:WaitForChild("ClientGameScript")
 local MobileService = require(ClientGameScript:WaitForChild("MobileService"))
 
 getgenv().Settings = {
-    AutoType = true,
+    AutoType = false,
     AutoJoin = true,
     LongWords = false,
     breakscript = false,
