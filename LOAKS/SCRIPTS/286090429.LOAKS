@@ -1,0 +1,1012 @@
+local Config = {
+    WindowName = "V.G Hub",
+	Color = Color3.fromRGB(255,128,64),
+	Keybind = Enum.KeyCode.RightControl
+}
+
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local Player = Players.LocalPlayer
+local wait = task.wait 
+local spawn = task.spawn 
+
+local Name = "Arsenal.txt"
+
+Des = {}
+if makefolder then
+    makefolder("V.G Hub")
+end
+
+local Settings
+
+if
+    not pcall(
+        function()
+            readfile("V.G Hub//" .. Name)
+        end
+    )
+ then
+    writefile("V.G Hub//" .. Name, HttpService:JSONEncode(Des))
+end
+
+Settings = HttpService:JSONDecode(readfile("V.G Hub//" .. Name))
+
+local function Save()
+    writefile("V.G Hub//" .. Name, HttpService:JSONEncode(Settings))
+end
+
+function getUserRole(i, v)
+    return i:GetRoleInGroup(v)
+end
+Players.PlayerAdded:Connect(
+    function(v)
+        if
+            getUserRole(v, 2613928) == "Game Moderators" or getUserRole(v, 2613928) == "Interns" or
+                getUserRole(v, 2613928) == "Contractors" or
+                getUserRole(v, 2613928) == "Contributors" or
+                getUserRole(v, 2613928) == "Beloved" or
+                getUserRole(v, 2613928) == "Main Developers" or
+                getUserRole(v, 2613928) == "Founder/Main Developer"
+         then
+            local PlaceID = game.PlaceId
+            local AllIDs = {}
+            local foundAnything = ""
+            local actualHour = os.date("!*t").hour
+            local Deleted = false
+            function TPReturner()
+                local Site
+                if foundAnything == "" then
+                    Site =
+                        game.HttpService:JSONDecode(
+                        game:HttpGet(
+                            "https://games.roblox.com/v1/games/" .. PlaceID .. "/servers/Public?sortOrder=Asc&limit=100"
+                        )
+                    )
+                else
+                    Site =
+                        game.HttpService:JSONDecode(
+                        game:HttpGet(
+                            "https://games.roblox.com/v1/games/" ..
+                                PlaceID .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. foundAnything
+                        )
+                    )
+                end
+                local ID = ""
+                if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
+                    foundAnything = Site.nextPageCursor
+                end
+                local num = 0
+                for i, v in pairs(Site.data) do
+                    local Possible = true
+                    ID = tostring(v.id)
+                    if tonumber(v.maxPlayers) > tonumber(v.playing) then
+                        for _, Existing in pairs(AllIDs) do
+                            if num ~= 0 then
+                                if ID == tostring(Existing) then
+                                    Possible = false
+                                end
+                            else
+                                if tonumber(actualHour) ~= tonumber(Existing) then
+                                    local delFile =
+                                        pcall(
+                                        function()
+                                            delfile("NotSameServers.json")
+                                            AllIDs = {}
+                                            table.insert(AllIDs, actualHour)
+                                        end
+                                    )
+                                end
+                            end
+                            num = num + 1
+                        end
+                        if Possible == true then
+                            table.insert(AllIDs, ID)
+                            wait()
+                            pcall(
+                                function()
+                                    writefile("NotSameServers.json", HttpService:JSONEncode(AllIDs))
+                                    wait()
+                                    game:GetService("TeleportService"):TeleportToPlaceInstance(
+                                        PlaceID,
+                                        ID,
+                                        Player
+                                    )
+                                end
+                            )
+                            wait(4)
+                        end
+                    end
+                end
+            end
+
+            function Teleport()
+                while wait() do
+                    pcall(
+                        function()
+                            TPReturner()
+                            if foundAnything ~= "" then
+                                TPReturner()
+                            end
+                        end
+                    )
+                end
+            end
+
+            -- If you'd like to use a script before server hopping (Like a Automatic Chest collector you can put the Teleport() after it collected everything.
+            Teleport() --CharWars
+        end
+    end
+)
+local test = getsenv(game.Players.LocalPlayer.PlayerGui.GUI.Client
+)
+local Join = test.JoinTeam 
+
+local function Nope()
+    Player.PlayerGui.Menew.Enabled = false
+    Player.PlayerGui.GUI.Enabled = true
+    Player.PlayerGui.GUI.TeamSelection.Visible = false
+    Player.PlayerGui.GUI.BottomFrame.Visible = false
+    Player.PlayerGui.GUI.Interface.Visible = true
+end
+local Teams = {"TBC","TBC","TRC","TYC","Random"}
+local function Spawn()
+    repeat
+        wait()
+    until not ReplicatedStorage.wkspc.Status.RoundOver.Value == true
+    wait(1)
+    for i,v in pairs(Teams) do wait(1)
+    if game.Players.LocalPlayer.Status.Team.Value == "Spectator" then
+    Join(v)
+    ReplicatedStorage.Events.LoadCharacter:FireServer()
+    Nope()
+    end 
+    end 
+end
+
+
+local Circle = Drawing.new("Circle")
+Circle.Color = Color3.fromRGB(22, 13, 56)
+Circle.Thickness = 1
+Circle.Radius = 250
+Circle.Visible = false 
+Circle.NumSides = 1000
+Circle.Filled = false
+Circle.Transparency = 1
+
+RunService.RenderStepped:Connect(
+    function()
+        local Mouse = UserInputService:GetMouseLocation()
+        Circle.Position = Vector2.new(Mouse.X, Mouse.Y)
+    end
+)
+
+Settings.Aimbot = {
+    FreeForAll = false,
+    WallCheck = false,
+    Enabled = false,
+    FOV = 250
+}
+local Shoot = false
+
+function FreeForAll(v)
+    if Settings.Aimbot.FreeForAll == false or Settings.T.FreeForAll == false then
+        if Player.Team == v.Team then
+            return false
+        else
+            return true
+        end
+    else
+        return true
+    end
+end
+
+function NotObstructing(i, v)
+    if Settings.Aimbot.WallCheck then
+        c = Workspace.CurrentCamera.CFrame.p
+        a = Ray.new(c, i - c)
+        f = Workspace:FindPartOnRayWithIgnoreList(a, v)
+        return f == nil
+    else
+        return true
+    end
+end
+UserInputService.InputBegan:Connect(
+    function(v)
+        if v.UserInputType == Enum.UserInputType.MouseButton2 then
+            Shoot = true
+        end
+    end
+)
+
+UserInputService.InputEnded:Connect(
+    function(v)
+        if v.UserInputType == Enum.UserInputType.MouseButton2 then
+            Shoot = false
+        end
+    end
+)
+
+function GetClosestToCuror()
+    Closest = math.huge
+    Target = nil
+    for _, v in pairs(Players:GetPlayers()) do
+        if FreeForAll(v) then
+            if
+                v ~= Player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and
+                    v.Character:FindFirstChild("Humanoid") and
+                    v.Character.Humanoid.Health ~= 0
+             then
+                Point, OnScreen = Workspace.CurrentCamera:WorldToViewportPoint(v.Character.HumanoidRootPart.Position)
+                if
+                    OnScreen and
+                        NotObstructing(
+                            v.Character.HumanoidRootPart.Position,
+                            {Player.Character, v.Character}
+                        )
+                 then
+                    Distance =
+                        (Vector2.new(Point.X, Point.Y) -
+                        Vector2.new(Player:GetMouse().X, Player:GetMouse().Y)).magnitude
+                    if Distance <= Settings.Aimbot.FOV then
+                        Closest = Distance
+                        Target = v
+                    end
+                end
+            end
+        end
+    end
+    return Target
+end
+
+RunService.Stepped:connect(
+    function()
+        pcall(
+            function()
+                if Settings.Aimbot.Enabled == false or Shoot == false then
+                    return
+                end
+                ClosestPlayer = GetClosestToCuror()
+                if ClosestPlayer then
+                    Workspace.CurrentCamera.CFrame =
+                        CFrame.new(Workspace.CurrentCamera.CFrame.p, ClosestPlayer.Character[Settings.AimPart].CFrame.p)
+                end
+            end
+        )
+    end
+)
+Settings.T = {
+    TeamCheck = false,
+    Delay = 0.01,
+    Enabled = false
+}
+
+local Aim = false
+UserInputService.InputBegan:connect(
+    function(v)
+        if v.UserInputType == Enum.UserInputType.MouseButton2 and Settings.T.Enabled then
+            Aim = true
+            while Aim do
+                wait()
+                if
+                    Player:GetMouse().Target and
+                        Players:FindFirstChild(
+                            Player:GetMouse().Target.Parent.Name
+                        )
+                 then
+                    local Person =
+                        Players:FindFirstChild(
+                        Player:GetMouse().Target.Parent.Name
+                    )
+                    if Person.Team ~= Player.Team or not Settings.T.TeamCheck then
+                        if Settings.T.Delay > 0 then
+                            wait(0.01)
+                        end
+                        mouse1press()
+                        wait()
+                        mouse1release()
+                    end
+                end
+                if not Settings.T.Enabled then
+                    break
+                end
+            end
+        end
+    end
+)
+
+UserInputService.InputEnded:connect(
+    function(v)
+        if v.KeyCode == Enum.UserInputType.MouseButton2 and Settings.T.Enabled then
+            Aim = false
+        end
+    end
+)
+local SolarisLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/33C69CE917C4A47A88157D31833E917C4A4731F/13CEF92ED21123EC/main/%F0%9D%97%A6%F0%9D%97%BC%F0%9D%98%82%F0%9D%97%BF%F0%9D%97%B0%F0%9D%97%B2.lua"))()
+
+
+
+--Coded by Tyris & Doiv (void)
+local uion = true
+local circle = Drawing.new("Circle")
+local LP = game:GetService("Players").LocalPlayer
+circle.Visible = false
+local fakeanim = Instance.new('Animation', workspace)
+fakeanim.AnimationId = 'rbxassetid://0'
+local userInputService = game:GetService("UserInputService")
+userInputService.MouseBehavior = Enum.MouseBehavior.Default
+
+local target;
+local bodyname;
+local ArmChams = false
+local WeaponChams = false
+local ArmMaterial = 'Plastic'
+local WeaponMaterial = 'Plastic'
+local SilentAimFOV_Thickness = 1
+local Show_SILENTAIMFOV = false
+local SilentAim_Toggled = false
+local Teamcheck_Toggled = false
+local Visuals_Toggled = false
+local SilentAimFOV_Filled = false
+local SilentAim_FOV = 0
+local SilentAimFOV_Transparency = 0
+local silentaim_headhitchance = 0
+local silentaim_bodyhitchance = 0
+local ArmChams_Color = Color3.new(50, 50, 50)
+local WeaponChams_Color = Color3.new(50, 50, 50)
+local SilentAimFOV_Numsides = 3
+local CustomYaw_Value = 0
+local leftrotation = CFrame.new(-150, 0, 0)
+local rightrotation = CFrame.new(150, 0, 0)
+local backrotation = CFrame.new(-4, 0, 0)
+local ChamsColor = Color3.fromRGB(50, 50, 50)
+local SilentAimFOV_Color = Color3.fromRGB(50, 50, 50)
+local defaultvector = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
+local hed = Instance.new('Part', workspace.Terrain)
+local rhead = Instance.new('Part', hed)
+local rtors = Instance.new('Part', hed)
+rhead.Name = "Head"
+rtors.Name = 'UpperTorso'
+
+
+local win = SolarisLib:New({
+  Name = "LOAKS-HUB",
+  FolderToSave = "LOAKS-HUB"
+})
+
+local tab = win:Tab("Aim Settings")
+local sec = tab:Section("Aimbot")
+
+local toggle = sec:Toggle("Aimbot", false,"Settings.Aimbot.Enabled", function(State)
+    Settings.Aimbot.Enabled = State
+end)
+local dropdown = sec:Dropdown("AimPart", {"HumanoidRootPart","Head","UpperTorso","LowerTorso","Random"},"","Dropdown", function(String)
+	Settings.AimPart = String
+end)
+if Settings.AimPart == nil then
+Settings.AimPart = "HumanoidRootPart"
+end 
+local toggle = sec:Toggle("FreeForAll", false,"Settings.Aimbot.FreeForAll", function(State)
+    Settings.Aimbot.FreeForAll = State
+    Settings.T.TeamCheck = Settings.Aimbot.FreeForAll
+end)
+local toggle = sec:Toggle("WallCheck", nil,"", function(State)
+    Settings.Aimbot.WallCheck = State
+end)
+local slider = sec:Slider("Aimbot Radius", 0,1000,0,2.5,"Settings.Aimbot.FOV,false", function(Value)
+    Settings.Aimbot.FOV = Circle.Radius 
+    Settings.Aimbot.FOV = Value
+end)
+local toggle = sec:Toggle("Circle Visible", nil,"Settings.Visible", function(State)
+   Circle.Visible = State
+end)
+
+local visual = win:Tab("Visual")
+local visual = visual:Section("Visual")
+visual:Button("PLAYER-ESP", function()
+  SolarisLib:Notification("ESP", "You have to rejoin for esp to go away")
+_G.FriendColor = Color3.fromRGB(0, 0, 255)
+_G.EnemyColor = Color3.fromRGB(255, 0, 0)
+_G.UseTeamColor = false
+
+local coregui = game:GetService("CoreGui")
+local players = game:GetService("Players")
+local plr = players.LocalPlayer
+
+local highlights = {}
+
+function esp(target, color)
+   pcall(function()
+       if target.Character then
+           if not highlights[target] then
+               local highlight = Instance.new("Highlight", coregui)
+               highlight.Name = target.Name
+               highlight.Adornee = target.Character
+               highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+               highlight.FillColor = color
+               highlights[target] = highlight
+           else
+               highlights[target].FillColor = color
+           end
+       end
+   end)
+end
+
+players.PlayerAdded:Connect(function(v)
+   v.CharacterAdded:Connect(function()
+       esp(v, _G.UseTeamColor and v.TeamColor.Color or ((plr.TeamColor == v.TeamColor) and _G.FriendColor or _G.EnemyColor))
+   end)
+end)
+
+players.PlayerRemoving:Connect(function(v)
+   if highlights[v] then
+       highlights[v]:Destroy()
+       highlights[v] = nil
+   end
+end)
+
+for i, v in pairs(players:GetPlayers()) do
+   if v ~= plr then
+       local color = _G.UseTeamColor and v.TeamColor.Color or ((plr.TeamColor == v.TeamColor) and _G.FriendColor or _G.EnemyColor)
+       v.CharacterAdded:Connect(function()
+           local color = _G.UseTeamColor and v.TeamColor.Color or ((plr.TeamColor == v.TeamColor) and _G.FriendColor or _G.EnemyColor)
+           esp(v, color)
+       end)
+
+       esp(v, color)
+   end
+end
+
+while task.wait() do
+   for i, v in pairs(highlights) do
+       local color = _G.UseTeamColor and i.TeamColor.Color or ((plr.TeamColor == i.TeamColor) and _G.FriendColor or _G.EnemyColor)
+       v.FillColor = color
+   end
+end
+end)--440
+local toggle = visual:Toggle("Rainbow Gun", nil,"Settings.RainBowGun", function(State)
+    Settings.RainBowGun = State
+    game:GetService("RunService").RenderStepped:Connect(
+        function()
+            if Settings.RainBowGun then
+                if game.Workspace.Camera:FindFirstChild("Arms") then
+                    for i, v in pairs(game.Workspace.Camera.Arms:GetChildren()) do 
+                        if v.ClassName == "MeshPart" then
+                            v.Color = Color3.fromHSV(tick()%5/5,1,1) -- changes Color
+                        end
+                    end
+                end
+            end
+        end)
+    end)
+local toggle = visual:Toggle("Arm Cham", nil,"", function(value)
+  ArmChams = value
+end)
+local toggle = visual:Toggle("Weapon Chams", nil,"", function(value)
+  WeaponChams = value
+end)
+local dropdown = visual:Dropdown("Arm Material", {"Plastic", "ForceField", "Wood", "Grass"},"ForceField","Dropdown", function(text)
+   ArmMaterial = text
+end)
+
+
+local dropdown = visual:Dropdown("Weapon Material", {"Plastic", "ForceField", "Wood", "Grass"},"ForceField","Dropdown", function(text)
+   WeaponMaterial = text
+end)
+visual:Colorpicker("Weapon Color", Color3.fromRGB(255,255,255),"Colorpicker", function(color3)
+   WeaponChams_Color = color3
+end)
+
+
+local player = win:Tab("Player")
+local player = player:Section("Player")
+
+
+local toggle = player:Toggle("E-FLY", nil,"", function(State)
+    sex2 = State
+    local Max = 0
+    local Players = game.Players
+    local LP = Players.LocalPlayer
+    local Mouse = LP:GetMouse()
+    Mouse.KeyDown:connect(function(k)
+        if k:lower() == 'e' then
+            Max = Max + 1
+            getgenv().Fly = false
+            if sex2 then
+                local T = LP.Character.UpperTorso
+                local S = {
+                    F = 0,
+                    B = 0,
+                    L = 0,
+                    R = 0
+                }
+                local S2 = {
+                    F = 0,
+                    B = 0,
+                    L = 0,
+                    R = 0
+                }
+                local SPEED = 5
+                local function FLY()
+                    getgenv().Fly = true
+                    local BodyGyro = Instance.new('BodyGyro', T)
+                    local BodyVelocity = Instance.new('BodyVelocity', T)
+                    BodyGyro.P = 9e4
+                    BodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+                    BodyGyro.cframe = T.CFrame
+                    BodyVelocity.velocity = Vector3.new(0, 0.1, 0)
+                    BodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
+                    spawn(function()
+                        repeat
+                            wait()
+                            LP.Character.Humanoid.PlatformStand = false
+                            if S.L + S.R ~= 0 or S.F + S.B ~= 0 then
+                                SPEED = 200
+                            elseif not (S.L + S.R ~= 0 or S.F + S.B ~= 0) and SPEED ~= 0 then
+                                SPEED = 0
+                            end
+                            if (S.L + S.R) ~= 0 or (S.F + S.B) ~= 0 then
+                                BodyVelocity.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (S.F + S.B)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(S.L + S.R, (S.F + S.B) * 0.2, 0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                                S2 = {
+                                    F = S.F,
+                                    B = S.B,
+                                    L = S.L,
+                                    R = S.R
+                                }
+                            elseif (S.L + S.R) == 0 and (S.F + S.B) == 0 and SPEED ~= 0 then
+                                BodyVelocity.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (S2.F + S2.B)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(S2.L + S2.R, (S2.F + S2.B) * 0.2, 0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                            else
+                                BodyVelocity.velocity = Vector3.new(0, 0.1, 0)
+                            end
+                            BodyGyro.cframe = game.Workspace.CurrentCamera.CoordinateFrame
+                        until not getgenv().Fly
+                        S = {
+                            F = 0,
+                            B = 0,
+                            L = 0,
+                            R = 0
+                        }
+                        S2 = {
+                            F = 0,
+                            B = 0,
+                            L = 0,
+                            R = 0
+                        }
+                        SPEED = 0
+                        BodyGyro:destroy()
+                        BodyVelocity:destroy()
+                        LP.Character.Humanoid.PlatformStand = false
+                    end)
+                end
+                Mouse.KeyDown:connect(function(k)
+                    if k:lower() == 'w' then
+                        S.F = 1
+                    elseif k:lower() == 's' then
+                        S.B = -1
+                    elseif k:lower() == 'a' then
+                        S.L = -1
+                    elseif k:lower() == 'd' then
+                        S.R = 1
+                    end
+                end)
+                Mouse.KeyUp:connect(function(k)
+                    if k:lower() == 'w' then
+                        S.F = 0
+                    elseif k:lower() == 's' then
+                        S.B = 0
+                    elseif k:lower() == 'a' then
+                        S.L = 0
+                    elseif k:lower() == 'd' then
+                        S.R = 0
+                    end
+                end)
+                FLY()
+                if Max == 2 then
+                    getgenv().Fly = false
+                    Max = 0
+                end
+            end
+        end
+    end)
+end)
+local toggle = player:Toggle("BHop", nil,"Settings.BHop", function(State)
+Settings.BHop = State
+spawn(function()
+while wait() and Settings.BHop do
+    Player.Character:WaitForChild("Humanoid").Jump = true
+end
+end)
+end)
+local toggle = player:Toggle("Auto Heal", nil,"Settings.AutoHeal", function(State)
+Settings.AutoHeal = State
+spawn(function()
+while Settings.AutoHeal do
+    wait()
+    pcall(
+        function()
+            for i, v in pairs(Workspace.Debris:GetChildren()) do
+                if v.Name == "DeadHP" then
+                    v.CFrame = Player.Character.HumanoidRootPart.CFrame
+                end
+            end
+        end
+    )
+end
+end)
+end)
+player:Textbox("WalkSpeed", false, function(txt)
+    getgenv().changedwalkspeed = true
+    if tonumber(txt) then
+        getgenv().walkspeed = tonumber(txt)
+    end
+end)
+player:Textbox("JumpPower", false, function(txt)
+    getgenv().changedjumppower = true
+    if tonumber(txt) then
+        getgenv().jumppower = tonumber(txt)
+    end
+end)
+game:GetService("RunService").RenderStepped:Connect(function()
+    if game.Players.LocalPlayer.Character.Humanoid.Health == 0 and getgenv().godmode then
+    local pos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+    game.Workspace.Remote.loadchar:InvokeServer(game.Players.LocalPlayer.Name)  
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
+    end
+    if getgenv().noclip then
+    if game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+    game.Players.LocalPlayer.Character:FindFirstChild("Humanoid"):ChangeState(11)
+    end
+    end
+    if getgenv().changedwalkspeed then
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = getgenv().walkspeed
+    end
+    if getgenv().changedjumppower then
+    game.Players.LocalPlayer.Character.Humanoid.UseJumpPower = true
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = getgenv().jumppower
+    end
+    if getgenv().changedhipheight then
+    game.Players.LocalPlayer.Character.Humanoid.HipHeight = getgenv().hipheight
+    end
+end)
+local gun = win:Tab("Gun Modes")
+local gun = gun:Section("Gun Modes")
+
+local toggle = gun:Toggle("Infinite Ammo", nil,"Settings.Infinite", function(State)
+Settings.Infinite = State
+RunService.Stepped:connect(
+    function()
+        pcall(
+            function()
+                if Settings.Infinite then
+                    Player.PlayerGui.GUI.Client.Variables.ammocount.Value = 667
+                    Player.PlayerGui.GUI.Client.Variables.ammocount2.Value = 667
+                end
+            end
+        )
+    end
+)
+end)
+--here
+
+local toggle = gun:Toggle("NoRecoil/Spread", nil,"Settings.Recoil", function(State)
+Settings.Recoil = State
+for i, v in pairs(ReplicatedStorage.Weapons:GetDescendants()) do
+    if v.Name == "MaxSpread" or v.Name == "Spread" or v.Name == "RecoilControl" then
+        if Settings.Recoil then
+            v.Value = 0 -- no spread or recoil
+        else
+            v.Value = 1
+        end
+    end
+end
+end)
+local toggle = gun:Toggle("FastFire Rate", nil,"Settings.FireRate", function(State)
+Settings.FireRate = State
+for _, v in pairs(ReplicatedStorage.Weapons:GetDescendants()) do
+    if v.Name == "FireRate" then
+        if Settings.FireRate then
+            v.Value = 0.02 -- Fast Firerate
+        else
+            v.Value = 0.8
+        end
+    end
+end
+end)
+local label = gun:Label("More Gun Modes Coming Soon!")
+
+
+local server = win:Tab("Server")
+local server = server:Section("Server") --anti lag - server hop - serverjoin 
+server:Button("Rejoin-Server", function()
+ game:GetService("TeleportService"):Teleport(game.PlaceId, game:GetService("Players").LocalPlayer) end)
+
+server:Button("Server-Hop", function()
+     local PlaceID = game.PlaceId
+    local AllIDs = {}
+    local foundAnything = ""
+    local actualHour = os.date("!*t").hour
+    local Deleted = false
+    local File = pcall(function()
+    AllIDs = game:GetService('HttpService'):JSONDecode(readfile("NotSameServers.json"))
+    end)
+    if not File then
+    table.insert(AllIDs, actualHour)
+    writefile("NotSameServers.json", game:GetService('HttpService'):JSONEncode(AllIDs))
+    end
+    function TPReturner()
+    local Site;
+    if foundAnything == "" then
+    Site = game.HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100'))
+    else
+    Site = game.HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100&cursor=' .. foundAnything))
+    end
+    local ID = ""
+    if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
+    foundAnything = Site.nextPageCursor
+    end
+    local num = 0;
+    for i,v in pairs(Site.data) do
+    local Possible = true
+    ID = tostring(v.id)
+    if tonumber(v.maxPlayers) > tonumber(v.playing) then
+    for _,Existing in pairs(AllIDs) do
+    if num ~= 0 then
+    if ID == tostring(Existing) then
+    Possible = false
+    end
+    else
+    if tonumber(actualHour) ~= tonumber(Existing) then
+    local delFile = pcall(function()
+    delfile("NotSameServers.json")
+    AllIDs = {}
+    table.insert(AllIDs, actualHour)
+    end)
+    end
+    end
+    num = num + 1
+    end
+    if Possible == true then
+    table.insert(AllIDs, ID)
+    wait()
+    pcall(function()
+    writefile("NotSameServers.json", game:GetService('HttpService'):JSONEncode(AllIDs))
+    wait()
+    game:GetService("TeleportService"):TeleportToPlaceInstance(PlaceID, ID, game.Players.LocalPlayer)
+    end)
+    wait(4)
+    end
+    end
+    end
+    end
+    function Teleport()
+    while wait() do
+    pcall(function()
+    TPReturner()
+    if foundAnything ~= "" then
+    TPReturner()
+    end
+    end)
+    end
+    end
+    Teleport() 
+end)
+server:Button("Anti-Lag", function()
+     for _,v in pairs(game:GetService("Workspace"):GetDescendants()) do
+        if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") then 
+            v.Material = Enum.Material.SmoothPlastic;
+            if v:IsA("Texture") then
+                v:Destroy();
+            end end;		
+        end;
+end)
+
+local silent = tab:Section("Silent Aim")
+local toggle = silent:Toggle("Silent Aimbot", nil,"", function(value)
+   SilentAim_Toggled = value
+end)
+local slider = silent:Slider("Silent Aimbot FOV", 0,500,0,2.5,"Slider", function(value)
+  SilentAim_FOV = value
+end)
+local slider = silent:Slider("HeadShot Accuracy", 0,100,0,2.5,"Slider", function(value)
+   silentaim_headhitchance = value
+end)
+local slider = silent:Slider("BodyShot Accuracy", 0,100,0,2.5,"Slider", function(value)
+   silentaim_bodyhitchance = value
+end)
+
+
+
+
+local function BulletTracer(ray)
+
+   local mid = ray.Origin + ray.Direction/2
+
+   if workspace.Camera:FindFirstChild("Arms") then
+       if workspace.Camera.Arms:FindFirstChild("Bullet") then
+           local pr = Instance.new("Part")
+           pr.Parent = workspace
+           pr.Anchored = true
+           pr.CFrame = CFrame.new(mid, ray.Origin)
+           pr.Size = Vector3.new(BulletTracer_Thickness, BulletTracer_Thickness, ray.Direction.Magnitude)
+           pr.Color = BulletTracers_Color
+           pr.Transparency = BulletTracers_Transparency
+           pr.Material = Enum.Material.Neon
+           print('Rayd')
+           wait(3)
+           pr:Destroy()
+       end
+   end
+
+end
+
+
+local function convert_rgb_to_vertex(c3)
+   return Vector3.new(c3.R, c3.G, c3.B)
+end
+local mt = getrawmetatable(game)
+local oldNamecall = mt.__namecall
+local oldIndex = mt.__index
+if setreadonly then
+   setreadonly(mt, false)
+else
+   make_writeable(mt, true)
+end
+local namecallMethod = getnamecallmethod or get_namecall_method
+local newClose = newcclosure or function(f)
+   return f
+end
+mt.__namecall = newClose(function(...)
+   local method = namecallMethod()
+   local args = {...}
+
+   if method == "FindPartOnRayWithIgnoreList" then
+       if SilentAim_Toggled then
+           args[2] = Ray.new(workspace.CurrentCamera.CFrame.Position, (target[bodyname].CFrame.p - workspace.CurrentCamera.CFrame.Position).unit * 500)
+       end
+   elseif method == 'LoadAnimation' and tostring(args[2]) == 'RunForward' or tostring(args[2]) == 'RunBackward' or
+       tostring(args[2]) == 'RunLeft' or tostring(args[2]) == 'RunRight' then
+       if NoAnims_Toggle then
+           args[2] = fakeanim
+       end
+   elseif method == 'FireServer' and tostring(args[1]) == "ControlTurn" then
+       if AntiAim_Toggle then
+           if Pitch_Type == "Custom" then
+               args[2] = CustomPitch_Value
+           elseif Pitch_Type == 'Down' then
+               args[2] = -1.5
+           elseif Pitch_Type == "Up" then
+               args[2] = 1.5
+           elseif Pitch_Type == "Zero" then
+               args[2] = 0
+           end
+       end
+   end
+
+   return oldNamecall(unpack(args))
+end)
+
+
+
+
+function GetTarget()
+   local fob = SilentAim_FOV
+   local nearestcharacter = nil
+   pcall(function()
+       local t = nil
+       local m = LP:GetMouse()
+       for _, PL in pairs(game.Players:GetPlayers()) do
+           if PL.Character and PL.Character:FindFirstChild("Head") then
+               if PL ~= LP then
+                   if Teamcheck_Toggled == false then
+                       if PL ~= nearestcharacter then
+                           local vector, onScreen = workspace.CurrentCamera:WorldToScreenPoint(PL.Character.Head.CFrame.p)
+                           local dist = (Vector2.new(vector.X, vector.Y) - Vector2.new(m.X, m.Y)).Magnitude
+                           if dist < fob then
+                               if 0 < PL.Character.Humanoid.Health then
+                                   nearestcharacter = PL.Character
+                                   fob = dist
+                               end
+                           end
+                       end
+                   else
+                       if PL.TeamColor ~= LP.TeamColor then
+                           if PL ~= nearestcharacter then
+                               local vector, onScreen = workspace.CurrentCamera:WorldToScreenPoint(PL.Character.Head.CFrame.p)
+                               local dist = (Vector2.new(vector.X, vector.Y) - Vector2.new(m.X, m.Y)).Magnitude
+                               if dist < fob then
+                                   if 0 < PL.Character.Humanoid.Health then
+                                       nearestcharacter = PL.Character
+                                       fob = dist
+                                   end
+                               end
+                           end
+                       end
+                   end
+               end
+           end
+       end
+   end)
+   return nearestcharacter
+end
+
+
+
+while true do
+
+
+  if SilentAim_Toggled then
+
+       local xd = math.random(0, 100);
+       if (silentaim_headhitchance or 0) <= xd then
+           bodyname = 'UpperTorso'
+       elseif (silentaim_bodyhitchance or 0) >= xd then
+           bodyname = 'Head'
+       else
+           bodyname = 'Head'
+       end
+       local yeet = GetTarget()
+       if yeet then
+           target = yeet
+       else
+           target = hed
+       end
+
+       if Show_SILENTAIMFOV then
+           circle.Visible = true
+           circle.Thickness = SilentAimFOV_Thickness
+           circle.NumSides = SilentAimFOV_Numsides
+           circle.Radius = SilentAim_FOV
+           circle.Filled = SilentAimFOV_Filled
+           circle.Position = defaultvector
+           circle.Color = SilentAimFOV_Color
+           circle.Transparency = SilentAimFOV_Transparency / 100
+       else
+           circle.Visible = false
+       end
+
+   end
+
+
+   if ArmChams then
+       if not workspace.Camera:FindFirstChild("Arms") then
+           wait()
+       else
+           for i,v in pairs(workspace.Camera.Arms:GetDescendants()) do
+               if v.Name == 'Right Arm' or v.Name == 'Left Arm' then
+                   if v:IsA("BasePart") then
+                       v.Material = Enum.Material[ArmMaterial]
+                       v.Color = ArmChams_Color
+                   end
+               elseif v:IsA("SpecialMesh") then
+                   if v.TextureId == '' then
+                       v.TextureId = 'rbxassetid://0'
+                       v.VertexColor = convert_rgb_to_vertex(ArmChams_Color)
+                   end
+               elseif v.Name == 'L' or v.Name == 'R' then
+                   v:Destroy()
+               end
+           end
+       end
+   end
+
+   if WeaponChams then
+       if not workspace.Camera:FindFirstChild("Arms") then
+           wait()
+       else
+           for i,v in pairs(workspace.Camera.Arms:GetDescendants()) do
+               if v:IsA("MeshPart") then
+                   v.Material = Enum.Material[WeaponMaterial]
+                   v.Color = WeaponChams_Color
+               end
+           end
+       end
+   end
+
+
+   game:GetService("RunService").RenderStepped:Wait()
+ end
