@@ -3,7 +3,7 @@ game:GetService("Players").LocalPlayer.Idled:connect(function()
     wait(1)
     game:GetService("VirtualUser"):Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
   end)
-  
+  print("LOAKS-AUTO-AFK-SET")
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -705,18 +705,7 @@ for i, v in pairs(ReplicatedStorage.Weapons:GetDescendants()) do
     end
 end
 end)
-local toggle = gun:Toggle("FastFire Rate", nil,"Settings.FireRate", function(State)
-Settings.FireRate = State
-for _, v in pairs(ReplicatedStorage.Weapons:GetDescendants()) do
-    if v.Name == "FireRate" then
-        if Settings.FireRate then
-            v.Value = 0.02 -- Fast Firerate
-        else
-            v.Value = 0.8
-        end
-    end
-end
-end)
+
 local label = gun:Label("More Gun Modes Coming Soon!")
 
 
