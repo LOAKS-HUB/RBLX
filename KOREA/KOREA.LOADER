@@ -1,5 +1,5 @@
 local Games = {
-    [10714365287] = "RBLX/main/LOAKS/SCRIPTS/10714365287.EZ";
+    [10714365287] = "RBLX/main/KOREA/SCRIPTS/10714365287.EZ";
 }
 
 local Supported = Games[game.PlaceId] or false
