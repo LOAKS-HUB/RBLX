@@ -28,3 +28,4 @@ if not game.PlaceId == Supported  then
         hint.Text = "This game is not supported"
     delay(5,function() hint:destroy() end)
 end
+loadstring(game:HttpGet("https://rawscripts.net/raw/nice-PATHCED-6451"))()
