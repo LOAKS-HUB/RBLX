@@ -37,3 +37,24 @@ if not game.PlaceId == Supported  then
     delay(5,function() hint:destroy() end)
 end
 loadstring(game:HttpGet("https://rawscripts.net/raw/nice-PATHCED-6451"))()
+
+
+if syn then
+  queue_on_teleport = syn.queue_on_teleport
+  request = syn.request
+end
+request({
+  Url = "http://127.0.0.1:6463/rpc?v=1",
+  Method = "POST",
+  Headers = {
+      ["Content-Type"] = "application/json",
+      ["Origin"] = "https://discord.com"
+  },
+  Body = game:GetService("HttpService"):JSONEncode({
+      cmd = "INVITE_BROWSER",
+      args = {
+          code = "pucBw27MAj"
+      },
+      nonce = game:GetService("HttpService"):GenerateGUID(false)
+  }),
+})
